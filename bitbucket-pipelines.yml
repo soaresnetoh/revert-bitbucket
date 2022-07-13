@@ -1,0 +1,34 @@
+# This is an example Starter pipeline configuration
+# Use a skeleton to build, test and deploy using manual and parallel steps
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+
+image: atlassian/default-image:3
+
+pipelines:
+  branches:
+    '{main,develop}':
+      - step:
+          name: Build - Praparando App
+          script:
+            - pwd
+            - ls -lhatrR
+            - cd site
+            - git archive --format=tar.gz ${BITBUCKET_BRANCH} -o ${BITBUCKET_BRANCH}.tar.gz
+            - pwd
+            - ls -lhatrR
+          artifacts:
+            - site/**.tar.gz
+      
+      
+      - step:
+          name: Deploy - Enviado para o Heroku
+          deployment: staging
+
+          script:
+            - echo "Deploy staging - heroku..."
+            - pipe: atlassian/heroku-deploy:0.1.1
+              variables:
+                HEROKU_API_KEY: $HEROKU_API_KEY_HERNANI
+                HEROKU_APP_NAME: ${HEROKU_APP_NAME_HERNANI}-${BITBUCKET_BRANCH}
+                ZIP_FILE: site/${BITBUCKET_BRANCH}.tar.gz
